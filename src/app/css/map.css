@@ -1,8 +1,3 @@
-.mainContainer {
-  /* width: 80%;
-  height: 80vh; */
-}
-
 .mapContainer {
   width: 100%;
   height: 80vh;
@@ -52,4 +47,37 @@
   opacity: 1;
   flex-direction: column;
   gap: 0.5em;
+}
+
+.airplane-icon {
+  transition: transform 0.3s ease;
+}
+
+.custom-offcanvas {
+  height: 60vh;
+  display: flex;
+  align-self: center;
+  margin-left: 1rem;
+  border-radius: 20px;
+}
+
+@media (max-width: 767px) {
+  .listStyle {
+    margin-top: 20px;
+  }
+
+  .mapContainer {
+    width: 100%;
+    height: 40vh;
+    transition: height 0.3s ease;
+  }
+  .mapContainer:hover {
+    height: 60vh;
+  }
+
+  .custom-offcanvas {
+    margin-left: auto;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
 }

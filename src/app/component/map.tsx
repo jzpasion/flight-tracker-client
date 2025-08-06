@@ -11,29 +11,13 @@ import {
   LayersControl,
 } from "react-leaflet";
 import { socket } from "./server";
-import { Icon, latLng, LatLngLiteral, Control, divIcon } from "leaflet";
+import { LatLngLiteral, divIcon } from "leaflet";
 
-import {
-  PiAirplaneTakeoffFill,
-  PiAirplaneLandingFill,
-  PiAirplaneFill,
-  PiAirplaneTaxiingFill,
-} from "react-icons/pi";
+import { PiAirplaneTaxiingFill } from "react-icons/pi";
 import { IoMdAirplane } from "react-icons/io";
 import { IoLocationSharp } from "react-icons/io5";
 
-import {
-  Container,
-  Row,
-  Col,
-  Stack,
-  Card,
-  OverlayTrigger,
-  Tooltip,
-  Offcanvas,
-} from "react-bootstrap";
-import Marquee from "react-fast-marquee";
-import { Slide } from "react-awesome-reveal";
+import { Container, Row, Col, Stack, Card, Offcanvas } from "react-bootstrap";
 import { PulseLoader } from "react-spinners";
 
 import "leaflet/dist/leaflet.css";
@@ -42,6 +26,8 @@ import "leaflet-defaulticon-compatibility";
 import "leaflet-control-geocoder/dist/Control.Geocoder.css";
 import "leaflet-rotatedmarker";
 import "../css/map.css";
+import { FList } from "./flights";
+import { OffCanvasDetails } from "./offCanvasDetails";
 
 type MapType = "roadmap" | "satellite" | "hybrid" | "terrain";
 
@@ -55,12 +41,6 @@ type MapProps = {
   loading: boolean;
   enableMap: boolean;
   loadingState: (isLoading: boolean) => void;
-};
-
-const SelectedLocation = ({ center }: { center: LatLngLiteral }) => {
-  const map = useMap();
-  map.panTo(center, { animate: true });
-  return null;
 };
 
 const LocationClick = ({ onClick }: any) => {
@@ -84,6 +64,9 @@ export const Map: React.FC<MapProps> = ({
   const [selectedLocation, setSelectedLocation] = useState<
     MapLocation | undefined
   >();
+  const [selectedMarker, setSelectedMarker] = useState(null);
+  const [show, setShow] = useState(false);
+  const [offCanvasData, setOffCanvasData] = useState<any>({});
 
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -99,6 +82,27 @@ export const Map: React.FC<MapProps> = ({
       socket.emit("getFlightsOnLocation", latLng.lat, latLng.lng, maxRadius);
       socket.emit("getRadiusMap", latLng.lat, latLng.lng, maxRadius + 5);
     }
+  };
+
+  const handleClose = () => {
+    setShow(false);
+    setSelectedMarker(null);
+  };
+  const handleShow = (callsign: any) => {
+    let tempData = {};
+    const aircraftDetails = flightDetails.filter((ac: any) => {
+      return ac.flight.trim() === callsign.trim();
+    });
+
+    const routeDetails = flightRouteData.filter((route: any) => {
+      return route.callsign.trim() === callsign.trim();
+    });
+
+    tempData = { ...aircraftDetails[0], ...routeDetails[0] };
+    setOffCanvasData(tempData);
+    console.log(tempData);
+
+    setShow(true);
   };
 
   // getting url for map style
@@ -122,9 +126,9 @@ export const Map: React.FC<MapProps> = ({
       iconSize: [25, 36],
       iconAnchor: [12, 36],
     });
-  const airplaneIcon = (color: any) =>
+  const airplaneIcon = (color: any, isSelected: boolean) =>
     divIcon({
-      className: "airplane-icon",
+      className: `airplane-icon ${isSelected ? "expanded" : ""}`,
       html: ReactDOMServer.renderToString(
         <IoMdAirplane size={40} color={color} />
       ),
@@ -169,17 +173,32 @@ export const Map: React.FC<MapProps> = ({
     );
   };
 
+  const handleMarkerClick = (flight: any) => {
+    handleShow(flight);
+    setSelectedMarker((prev) => (prev === flight ? null : flight));
+  };
+
   const renderAirplanes = () => {
     return flightDetails.map((flight: any, index: number) => {
+      const isSelected = selectedMarker === flight.hex;
       const marker = (
         <Marker
           key={flight.hex}
-          icon={airplaneIcon(flight.color)}
+          icon={airplaneIcon(flight.color, isSelected)}
           position={{ lat: flight.lat, lng: flight.lon }}
           rotationAngle={flight.track}
           ref={(ref: any) => (markersRef.current[index] = ref)}
           eventHandlers={{
-            click: () => {},
+            click: (e) => {
+              const popupContent = popup(flight);
+              e.target
+                .bindPopup(popupContent, {
+                  closeButton: false,
+                  offset: [5, -10],
+                })
+                .openPopup();
+              handleMarkerClick(flight.flight);
+            },
             mouseover: (e) => {
               const popupContent = popup(flight);
               e.target
@@ -190,7 +209,10 @@ export const Map: React.FC<MapProps> = ({
                 .openPopup();
             },
             mouseout: (e) => {
-              e.target.closePopup();
+              if (selectedMarker !== flight.flight) {
+                e.target.closePopup();
+                handleClose();
+              }
             },
           }}
         />
@@ -227,7 +249,6 @@ export const Map: React.FC<MapProps> = ({
             >
               {tileOverLay()}
               {renderAirplanes()}
-              {/* {selectedLocation && <SelectedLocation center={selectedLocation} />} */}
               {selectedLocation && (
                 <Marker
                   position={selectedLocation}
@@ -262,94 +283,19 @@ export const Map: React.FC<MapProps> = ({
           </div>
         </Col>
         <Col>
-          <Stack className="listStyle" gap={3}>
-            {flightRouteData.length === 0 ? (
-              <Slide direction="right">
-                <Card>
-                  <div
-                    className="d-flex align-items-center gap-2"
-                    style={{ padding: "20px" }}
-                  >
-                    No Flights Nearby
-                    <PiAirplaneFill size={20} />
-                  </div>
-                </Card>
-              </Slide>
-            ) : (
-              flightRouteData.map((flights: any) => (
-                <Slide key={flights.callsign_iata} direction="right">
-                  <Card
-                    key={flights.callsign_iata}
-                    style={{ borderBottom: `4px solid ${flights.color}` }}
-                    onClick={() => {}}
-                  >
-                    <Container>
-                      <Row>
-                        <Col className="align-items-start my-3">
-                          <Card.Title style={{ color: `${flights.color}` }}>
-                            {flights.callsign}
-                          </Card.Title>
-                          <Card.Subtitle>{flights.airline.name}</Card.Subtitle>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col className="d-flex justify-content-center align-items-center">
-                          <div className="d-flex align-items-center gap-2">
-                            {flights.origin.iata_code}
-                            <PiAirplaneTakeoffFill size={20} />
-                          </div>
-                        </Col>
-                        <Col>
-                          <div className="d-flex align-items-center">
-                            <div
-                              style={{
-                                flex: 1,
-                                borderBottom: "2px dashed black",
-                              }}
-                            ></div>
-
-                            <PiAirplaneFill
-                              size={20}
-                              style={{ margin: "0 10px" }}
-                            />
-
-                            <div
-                              style={{
-                                flex: 1,
-                                borderBottom: "2px dashed black",
-                              }}
-                            ></div>
-                          </div>
-                        </Col>
-                        <Col className="d-flex justify-content-center align-items-center">
-                          <div className="d-flex align-items-center gap-2">
-                            <PiAirplaneLandingFill size={20} />
-                            {flights.destination.iata_code}
-                          </div>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col className="d-flex justify-content-center align-items-center">
-                          <div className="d-flex align-items-center gap-2">
-                            {flights.origin.country_name}
-                          </div>
-                        </Col>
-                        <Col></Col>
-                        <Col className="d-flex justify-content-center align-items-center">
-                          <div className="d-flex align-items-center gap-2">
-                            {flights.destination.country_name}
-                          </div>
-                        </Col>
-                      </Row>
-                      <Row className="my-2"></Row>
-                    </Container>
-                  </Card>
-                </Slide>
-              ))
-            )}
-          </Stack>
+          <FList
+            flightRouteData={flightRouteData}
+            handleMarkerClick={handleMarkerClick}
+            handleShow={handleShow}
+          />
         </Col>
       </Row>
+
+      <OffCanvasDetails
+        handleClose={handleClose}
+        show={show}
+        offCanvasData={offCanvasData}
+      />
     </Container>
   );
 };
