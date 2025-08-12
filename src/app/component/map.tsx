@@ -71,7 +71,7 @@ export const Map: React.FC<MapProps> = ({
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
 
-  const maxRadius = 5;
+  const maxRadius = 10;
   const handleMapClick = async (latLng: any) => {
     if (enableMap && !loading) {
       loadingState(true);
@@ -80,7 +80,7 @@ export const Map: React.FC<MapProps> = ({
         mapRef.current.panTo(latLng, { animate: true });
       }
       socket.emit("getFlightsOnLocation", latLng.lat, latLng.lng, maxRadius);
-      socket.emit("getRadiusMap", latLng.lat, latLng.lng, maxRadius + 5);
+      socket.emit("getRadiusMap", latLng.lat, latLng.lng, maxRadius + 10);
     }
   };
 
@@ -100,7 +100,6 @@ export const Map: React.FC<MapProps> = ({
 
     tempData = { ...aircraftDetails[0], ...routeDetails[0] };
     setOffCanvasData(tempData);
-    console.log(tempData);
 
     setShow(true);
   };

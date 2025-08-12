@@ -1,9 +1,10 @@
 "use client";
 import dynamic from "next/dynamic";
-import { Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, Stack, Card } from "react-bootstrap";
 import { socket } from "./component/server";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useEffect, useState } from "react";
+import { TimeDisplay } from "./component/time";
 
 const Map = dynamic(
   () => import("@/app/component/map").then((component) => component.Map),
@@ -52,9 +53,44 @@ const HomePage = () => {
   }, []);
   return (
     <Container>
-      <Row>
-        <Col className="align-items-start my-3">
-          <h2>Flight Navigation Tracker</h2>
+      <Row className="mt-1">
+        <Col className="d-flex flex-column flex-md-row justify-content-start align-items-start gap-5 my-3">
+          <TimeDisplay
+            timeZone="Asia/Tokyo"
+            color="#BC002D"
+            title="Japan"
+            contryCode="JP"
+          />
+          <TimeDisplay
+            timeZone="Europe/London"
+            color="#012169"
+            title="London"
+            contryCode="GB"
+          />
+          <TimeDisplay
+            timeZone="Asia/Manila"
+            color="#FED141"
+            title="Philippines"
+            contryCode="PH"
+          />
+          <TimeDisplay
+            timeZone="Australia/Sydney"
+            color="#012169"
+            title="Australia"
+            contryCode="AU"
+          />
+          <TimeDisplay
+            timeZone="Canada/Pacific"
+            color="#D80621"
+            title="Canada"
+            contryCode="CA"
+          />
+          <TimeDisplay
+            timeZone="IST"
+            color="#046A38"
+            title="India"
+            contryCode="IN"
+          />
         </Col>
       </Row>
       <Row>
