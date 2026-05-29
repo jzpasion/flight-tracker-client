@@ -229,8 +229,8 @@ export const Map: React.FC<MapProps> = ({
     });
   }, [flightDetails]);
   return (
-    <Container>
-      <Row>
+    <Container fluid className="px-3 px-md-4 py-3">
+      <Row className="g-4">
         <Col lg={9}>
           <div style={{ position: "relative" }}>
             <MapContainer
@@ -268,20 +268,21 @@ export const Map: React.FC<MapProps> = ({
               <LocationClick onClick={handleMapClick} />
               <Polygon
                 positions={radiusData}
-                fillColor="lightgreen"
-                color="green"
-                weight={1}
-                opacity={0.5}
-                fillOpacity={0.2}
+                fillColor="#E0E7FF"
+                color="#4F46E5"
+                weight={2}
+                opacity={0.7}
+                fillOpacity={0.15}
               />
             </MapContainer>
             <div className={`overlay ${loading ? "show" : ""}`}>
-              <PiAirplaneTaxiingFill size={50} color="#162930" />
-              <PulseLoader size={17} speedMultiplier={0.8} color="#162930" />
+              <PiAirplaneTaxiingFill size={48} color="#4F46E5" />
+              <PulseLoader size={14} speedMultiplier={0.8} color="#4F46E5" />
+              <span className="overlay-label">Scanning airspace…</span>
             </div>
           </div>
         </Col>
-        <Col>
+        <Col lg={3}>
           <FList
             flightRouteData={flightRouteData}
             handleMarkerClick={handleMarkerClick}

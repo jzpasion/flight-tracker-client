@@ -16,43 +16,35 @@ export const TimeDisplay: React.FC<intlFormat> = ({
   const [time, setTime] = useState("");
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      const currentTime = new Date();
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+      timeZone: timeZone,
+    });
 
-      const formatter = new Intl.DateTimeFormat("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true,
-        timeZone: timeZone,
-      });
+    const tick = () => setTime(formatter.format(new Date()));
 
-      setTime(formatter.format(currentTime));
-    }, 1000);
+    tick(); // show immediately instead of waiting 1s
+    const intervalId = setInterval(tick, 1000);
 
     return () => {
       clearInterval(intervalId);
     };
-  }, []);
+  }, [timeZone]);
+
   return (
-    <div className="d-flex flex-column align-items-center justify-content-center ">
-      <div
-        style={{
-          fontSize: "1.2rem",
-          fontWeight: "bold",
-          padding: "2px",
-          borderBottom: `5px solid ${color}`,
-          borderBottomLeftRadius: "10px",
-        }}
-      >
+    <div className="clock-chip" style={{ borderTopColor: color }}>
+      <div className="chip-title">
         {title}
         <ReactCountryFlag
           countryCode={contryCode}
-          style={{ marginLeft: "10px" }}
           svg
+          style={{ width: "1.1em", height: "1.1em", borderRadius: "2px" }}
         />
       </div>
-      <div style={{ fontSize: "1.3em" }}>{time}</div>
+      <div className="chip-time">{time}</div>
     </div>
   );
 };

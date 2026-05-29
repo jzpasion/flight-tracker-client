@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { IoMdAirplane } from "react-icons/io";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Flight Tracker",
-  description: "Flight Tracker",
+  title: "Flight Viewer",
+  description: "Flight Viewer",
 };
 
 export default function RootLayout({
@@ -27,7 +28,19 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <header className="app-header">
+          <div className="brand">
+            <IoMdAirplane size={26} />
+            <span>
+              Flight <span className="brand-accent">Viewer</span>
+            </span>
+          </div>
+          <div className="header-meta">
+            <span className="live-dot" />
+            <span>Live</span>
+          </div>
+        </header>
+        <main style={{ minHeight: "calc(100vh - 64px)" }}>{children}</main>
       </body>
     </html>
   );

@@ -1,10 +1,6 @@
-import { Container, Row, Col, Stack, Card, Offcanvas } from "react-bootstrap";
+import { Stack, Card } from "react-bootstrap";
 import { Slide } from "react-awesome-reveal";
-import {
-  PiAirplaneTakeoffFill,
-  PiAirplaneLandingFill,
-  PiAirplaneFill,
-} from "react-icons/pi";
+import { PiAirplaneFill } from "react-icons/pi";
 
 type flistProps = {
   flightRouteData: any;
@@ -19,93 +15,93 @@ export const FList: React.FC<flistProps> = ({
 }) => {
   return (
     <Stack className="listStyle" gap={3}>
+      <div className="list-heading">
+        <span className="list-title">Nearby Flights</span>
+        <span className="list-count">{flightRouteData.length}</span>
+      </div>
+
       {flightRouteData.length === 0 ? (
         <Slide direction="right">
-          <Card>
-            <div
-              className="d-flex align-items-center gap-2"
-              style={{ padding: "20px" }}
-            >
-              No Flights Nearby
-              <PiAirplaneFill size={20} />
+          <Card className="card-details">
+            <div className="fc-empty">
+              <span className="fc-empty-icon">
+                <PiAirplaneFill size={26} />
+              </span>
+              <span className="fc-empty-title">No flights nearby</span>
+              <span className="fc-empty-hint">
+                Click anywhere on the map to scan for live aircraft
+              </span>
             </div>
           </Card>
         </Slide>
       ) : (
-        flightRouteData.map((flights: any) => (
-          <Slide key={flights.callsign_iata} direction="right">
-            <Card
-              className="card-details"
-              key={flights.callsign_iata}
-              style={{
-                borderBottom: `4px solid ${flights.color}`,
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                handleMarkerClick(flights.callsign);
-                handleShow(flights.callsign);
-              }}
-            >
-              <Container>
-                <Row>
-                  <Col className="align-items-start my-3">
-                    <Card.Title style={{ color: `${flights.color}` }}>
+        flightRouteData.map((flights: any) => {
+          const activate = () => {
+            handleMarkerClick(flights.callsign);
+            handleShow(flights.callsign);
+          };
+          return (
+            <Slide key={flights.callsign_iata} direction="right">
+              <Card
+                className="card-details flight-card-accent"
+                role="button"
+                tabIndex={0}
+                aria-label={`View details for flight ${flights.callsign}`}
+                style={{ borderLeftColor: flights.color, cursor: "pointer" }}
+                onClick={activate}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    activate();
+                  }
+                }}
+              >
+                <div className="fc-body">
+                  <div className="fc-top">
+                    <span className="callsign" style={{ color: flights.color }}>
                       {flights.callsign}
-                    </Card.Title>
-                    <Card.Subtitle>{flights.airline.name}</Card.Subtitle>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col className="d-flex justify-content-center align-items-center">
-                    <div className="d-flex align-items-center gap-2">
-                      {flights.origin.iata_code}
-                      <PiAirplaneTakeoffFill size={20} />
-                    </div>
-                  </Col>
-                  <Col>
-                    <div className="d-flex align-items-center">
-                      <div
-                        style={{
-                          flex: 1,
-                          borderBottom: "2px dashed black",
-                        }}
-                      ></div>
+                    </span>
+                    <span className="airline" title={flights.airline.name}>
+                      {flights.airline.name}
+                    </span>
+                  </div>
 
-                      <PiAirplaneFill size={20} style={{ margin: "0 10px" }} />
+                  <div className="fc-route">
+                    <div className="fc-end">
+                      <span className="route-code">
+                        {flights.origin.iata_code}
+                      </span>
+                      <span
+                        className="country"
+                        title={flights.origin.country_name}
+                      >
+                        {flights.origin.country_name}
+                      </span>
+                    </div>
 
-                      <div
-                        style={{
-                          flex: 1,
-                          borderBottom: "2px dashed black",
-                        }}
-                      ></div>
+                    <div className="fc-line">
+                      <span className="fc-track" />
+                      <PiAirplaneFill size={16} className="fc-plane" />
+                      <span className="fc-track" />
                     </div>
-                  </Col>
-                  <Col className="d-flex justify-content-center align-items-center">
-                    <div className="d-flex align-items-center gap-2">
-                      <PiAirplaneLandingFill size={20} />
-                      {flights.destination.iata_code}
+
+                    <div className="fc-end fc-end-right">
+                      <span className="route-code">
+                        {flights.destination.iata_code}
+                      </span>
+                      <span
+                        className="country"
+                        title={flights.destination.country_name}
+                      >
+                        {flights.destination.country_name}
+                      </span>
                     </div>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col className="d-flex justify-content-center align-items-center">
-                    <div className="d-flex align-items-center gap-2">
-                      {flights.origin.country_name}
-                    </div>
-                  </Col>
-                  <Col></Col>
-                  <Col className="d-flex justify-content-center align-items-center">
-                    <div className="d-flex align-items-center gap-2">
-                      {flights.destination.country_name}
-                    </div>
-                  </Col>
-                </Row>
-                <Row className="my-2"></Row>
-              </Container>
-            </Card>
-          </Slide>
-        ))
+                  </div>
+                </div>
+              </Card>
+            </Slide>
+          );
+        })
       )}
     </Stack>
   );

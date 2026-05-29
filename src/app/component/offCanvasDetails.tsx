@@ -25,12 +25,11 @@ export const OffCanvasDetails: React.FC<offCanvasProps> = ({
       backdrop={false}
       show={show}
       onHide={handleClose}
-      style={{ border: `1px solid ${offCanvasData?.color}` }}
     >
       <Offcanvas.Header closeButton>
         <div className="w-100">
           <Offcanvas.Title>{offCanvasData?.flight}</Offcanvas.Title>
-          <p className="text-muted mb-0" style={{ marginTop: "5px" }}>
+          <p className="mb-0" style={{ marginTop: "5px", color: "var(--text-muted)" }}>
             {detailsAvailable
               ? offCanvasData?.airline?.name
               : "Airline info not available"}
@@ -39,25 +38,29 @@ export const OffCanvasDetails: React.FC<offCanvasProps> = ({
       </Offcanvas.Header>
       <Offcanvas.Body>
         <Card
+          className="card-details flight-card-accent"
           style={{
-            borderBottom: `4px solid ${
-              detailsAvailable ? offCanvasData.color : "none"
-            }`,
-            cursor: "pointer",
+            borderLeftColor: detailsAvailable
+              ? offCanvasData.color
+              : "transparent",
           }}
         >
-          <Container>
+          <Container className="py-3">
             {detailsAvailable ? (
               <>
-                <Row className="mb-2    ">
+                <Row className="mb-2">
                   <>
                     <Col className="d-flex align-items-start">
                       <Stack>
-                        <div>{offCanvasData?.origin?.iata_code}</div>
+                        <div className="route-code">
+                          {offCanvasData?.origin?.iata_code}
+                        </div>
                         <div style={{ fontSize: ".8em" }}>
                           {offCanvasData?.origin?.name}
                         </div>
-                        <div>{offCanvasData?.origin?.country_name}</div>
+                        <div className="country">
+                          {offCanvasData?.origin?.country_name}
+                        </div>
                       </Stack>
                     </Col>
                     <Col
@@ -65,11 +68,15 @@ export const OffCanvasDetails: React.FC<offCanvasProps> = ({
                       style={{ height: "100%" }}
                     >
                       <Stack gap={0} style={{ textAlign: "right" }}>
-                        <div>{offCanvasData?.destination?.iata_code}</div>
+                        <div className="route-code">
+                          {offCanvasData?.destination?.iata_code}
+                        </div>
                         <div style={{ fontSize: ".8em" }}>
                           {offCanvasData?.destination?.name}
                         </div>
-                        <div>{offCanvasData?.destination?.country_name}</div>
+                        <div className="country">
+                          {offCanvasData?.destination?.country_name}
+                        </div>
                       </Stack>
                     </Col>
                   </>
@@ -85,21 +92,9 @@ export const OffCanvasDetails: React.FC<offCanvasProps> = ({
                   </Col>
                   <Col xs={8}>
                     <div className="d-flex align-items-center">
-                      <div
-                        style={{
-                          flex: 1,
-                          borderBottom: "2px dashed black",
-                        }}
-                      ></div>
-
-                      <PiAirplaneTiltFill size={20} />
-
-                      <div
-                        style={{
-                          flex: 1,
-                          borderBottom: "2px dashed black",
-                        }}
-                      ></div>
+                      <div className="route-dash"></div>
+                      <PiAirplaneTiltFill size={20} style={{ margin: "0 8px" }} />
+                      <div className="route-dash"></div>
                     </div>
                   </Col>
                   <Col
@@ -111,16 +106,12 @@ export const OffCanvasDetails: React.FC<offCanvasProps> = ({
                     </div>
                   </Col>
                 </Row>
-                <div
-                  style={{
-                    flex: 1,
-                    borderBottom: "1px solid black",
-                    marginBottom: "1em",
-                  }}
-                />
+                <hr className="route-divider" style={{ marginBottom: "1em" }} />
               </>
             ) : (
-              <Col className="d-flex align-items-start">No Route Details</Col>
+              <Col className="d-flex align-items-start text-muted-soft">
+                No route details
+              </Col>
             )}
           </Container>
         </Card>
