@@ -35,13 +35,15 @@ export const FList: React.FC<flistProps> = ({
           </Card>
         </Slide>
       ) : (
-        flightRouteData.map((flights: any) => {
+        flightRouteData.map((flights: any, i: number) => {
           const activate = () => {
             handleMarkerClick(flights.callsign);
             handleShow(flights.callsign);
           };
           return (
-            <Slide key={flights.callsign_iata} direction="right">
+            // callsign_iata can be null/duplicate, which makes React drop rows;
+            // key on the unique ICAO callsign (falling back to index).
+            <Slide key={flights.callsign || flights.callsign_iata || i} direction="right">
               <Card
                 className="card-details flight-card-accent"
                 role="button"
